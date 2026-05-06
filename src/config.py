@@ -77,6 +77,22 @@ class Settings(BaseModel):
     discord_webhook_alert: str
     log_level: str = "INFO"
     dry_run: bool = False
+    # X (Twitter) — 4つすべて埋まっていれば投稿、ひとつでも空ならスキップ
+    x_api_key: str = ""
+    x_api_key_secret: str = ""
+    x_access_token: str = ""
+    x_access_token_secret: str = ""
+
+    @property
+    def x_enabled(self) -> bool:
+        return all(
+            [
+                self.x_api_key,
+                self.x_api_key_secret,
+                self.x_access_token,
+                self.x_access_token_secret,
+            ]
+        )
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -100,4 +116,8 @@ def load_settings() -> Settings:
         discord_webhook_alert=os.environ["DISCORD_WEBHOOK_ALERT"],
         log_level=os.getenv("LOG_LEVEL", "INFO"),
         dry_run=os.getenv("DRY_RUN", "false").lower() == "true",
+        x_api_key=os.getenv("X_API_KEY", ""),
+        x_api_key_secret=os.getenv("X_API_KEY_SECRET", ""),
+        x_access_token=os.getenv("X_ACCESS_TOKEN", ""),
+        x_access_token_secret=os.getenv("X_ACCESS_TOKEN_SECRET", ""),
     )

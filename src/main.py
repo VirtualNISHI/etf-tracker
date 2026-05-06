@@ -36,6 +36,7 @@ from src.flows import (
     sort_by_display_order,
 )
 from src.format_embed import build_alert_embed, build_daily_embed
+from src.format_x import build_daily_text
 from src.notable import generate_notable_lines
 from src.send_discord import send_embed
 
@@ -93,6 +94,25 @@ async def run_daily() -> None:
     notable = generate_notable_lines(btc_summary, eth_summary, thresholds.notable)
     embed = build_daily_embed(btc_summary, eth_summary, notable, thresholds.embed)
     await send_embed(settings.discord_webhook_daily, embed, dry_run=settings.dry_run)
+
+    # X (Twitter) 投稿(全キーが揃っているときだけ)
+    if settings.x_enabled:
+        x_text = build_daily_text(btc_summary, eth_summary, notable)
+        if settings.dry_run:
+            logger.info(f"[DRY_RUN] X tweet ({len(x_text)} chars):\n{x_text}")
+        else:
+            from src.clients.x_client import XClient
+
+            x = XClient(
+                api_key=settings.x_api_key,
+                api_key_secret=settings.x_api_key_secret,
+                access_token=settings.x_access_token,
+                access_token_secret=settings.x_access_token_secret,
+            )
+            x.post(x_text)
+    else:
+        logger.info("X credentials not set, skipping tweet")
+
     logger.info("=== Daily report done ===")
 
 
