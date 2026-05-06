@@ -1,0 +1,24 @@
+# Arkham から収集したアドレスを以下の形式で貼り付ける。
+# ヘッダ行 "# <cluster_id>" の後に、アドレスを1行1件で書く。
+# このファイル自体はサンプル。実物は addresses_input.txt として保存して使う。
+
+# coinbase_custody_btc
+# (BlackRock IBIT / Grayscale GBTC / ARKB / BITB / 等のカストディアン Coinbase Custody/Prime のBTCアドレス)
+# Arkham → https://intel.arkm.com/explorer/entity/coinbase-custody → Addresses タブ → BTC → 上位
+# bc1q...
+# 1...
+# 3...
+
+# fidelity_btc
+# (FBTC のカストディアン Fidelity Digital Assets のBTCアドレス)
+# Arkham → https://intel.arkm.com/explorer/entity/fidelity-digital-assets → Addresses タブ → BTC
+# bc1q...
+
+# coinbase_custody_eth
+# (BlackRock ETHA / Grayscale ETHE / 等のカストディアンのETHアドレス)
+# Arkham → https://intel.arkm.com/explorer/entity/coinbase-custody → Addresses タブ → ETH
+# 0x...
+
+# fidelity_eth
+# (FETH のカストディアン Fidelity のETHアドレス)
+# 0x...

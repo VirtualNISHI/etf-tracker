@@ -1,0 +1,40 @@
+[project]
+name = "nishi-etf-tracker"
+version = "0.2.0"
+description = "BTC/ETH ETF custody flow tracker for Discord (free APIs)"
+requires-python = ">=3.11"
+dependencies = [
+    "discord-webhook>=1.3.1",
+    "apscheduler>=3.10.4",
+    "httpx>=0.27.0",
+    "pyyaml>=6.0.1",
+    "loguru>=0.7.2",
+    "sqlalchemy>=2.0.30",
+    "python-dotenv>=1.0.1",
+    "pydantic>=2.7.0",
+    "tenacity>=8.2.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "mypy>=1.10",
+    "ruff>=0.4.0",
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "types-PyYAML",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.mypy]
+strict = true
+python_version = "3.11"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]

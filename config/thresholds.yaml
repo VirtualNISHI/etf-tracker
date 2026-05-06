@@ -1,0 +1,37 @@
+# 配信スケジュール・閾値設定
+
+schedule:
+  timezone: "Asia/Tokyo"
+  daily_times:
+    - "08:00"
+    - "22:00"
+  alert_check_interval_minutes: 5
+
+# 臨時アラート閾値(単発トランザクション)
+alert_thresholds:
+  btc:
+    inflow: 1000
+    outflow: -1000
+  eth:
+    inflow: 10000
+    outflow: -10000
+
+# Notable自動生成
+notable:
+  lookback_days: 30
+  consecutive_flow_min_days: 3
+  significant_net_flow_btc: 500
+  significant_net_flow_eth: 5000
+
+# Discord Embed
+embed:
+  color_btc: 16167962    # #F7931A
+  color_eth: 6398202     # #627EEA
+  color_alert: 15409980  # #EB3B3C
+
+# データソース固有
+api:
+  etherscan_base_url: "https://api.etherscan.io/v2/api"  # V2 (chainid付与必須、2025年中にV1廃止)
+  mempool_base_url: "https://mempool.space/api"
+  coingecko_base_url: "https://api.coingecko.com/api/v3"
+  request_min_interval_ms: 100  # 連続呼び出し時の最低間隔

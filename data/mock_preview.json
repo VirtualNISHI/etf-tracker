@@ -1,0 +1,26 @@
+{
+  "title": "📊 ETF Custody Flow Report",
+  "description": "**2026-05-06 09:00 JST** · 過去24時間",
+  "color": 16167962,
+  "fields": [
+    {
+      "name": "🟠 BTC ETF Custody",
+      "value": "`Coinbase Custody       +2,250 BTC` (in: 2,450 / out: 200)\n`Fidelity                 +650 BTC` (in: 650 / out: 0)\n`Net Total              +2,900 BTC` ≒ +$294M",
+      "inline": false
+    },
+    {
+      "name": "🟣 ETH ETF Custody",
+      "value": "`Coinbase Custody      +12,000 ETH` (in: 12,000 / out: 0)\n`Fidelity               +6,200 ETH` (in: 6,200 / out: 0)\n`Net Total             +18,200 ETH` ≒ +$67M",
+      "inline": false
+    },
+    {
+      "name": "📌 Notable",
+      "value": "・Coinbase Custody BTCに過去30日最大の単日流入\n・ETH側は3日連続で純流入継続\n・大口(1,000+ BTC)流入を1件検知 → #etf-flow-alert",
+      "inline": false
+    }
+  ],
+  "footer": {
+    "text": "Data: mempool.space + Etherscan · by 仮想NISHI · @Nishi8maru"
+  },
+  "timestamp": "2026-05-06T02:21:59.532166"
+}

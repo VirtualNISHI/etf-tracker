@@ -1,0 +1,17 @@
+[Unit]
+Description=NISHI ETF Tracker Bot (B plan)
+After=network.target
+
+[Service]
+Type=simple
+User=nishi
+WorkingDirectory=/opt/nishi-etf-tracker
+EnvironmentFile=/opt/nishi-etf-tracker/.env
+ExecStart=/opt/nishi-etf-tracker/.venv/bin/python -m src.main
+Restart=on-failure
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

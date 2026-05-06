@@ -1,0 +1,54 @@
+name: ETF Custody Daily Report
+
+# JST 08:00 / 22:00 に Discord (#etf-flow-daily) へ自動配信。
+# GitHub Actions の cron は UTC 解釈、かつピーク時に最大15分程度の遅延あり。
+# 厳密な時刻配信が必要なら別の cron 基盤(VPS等)を検討。
+
+on:
+  schedule:
+    - cron: '0 23 * * *'  # UTC 23:00 = JST 翌日 08:00
+    - cron: '0 13 * * *'  # UTC 13:00 = JST 当日 22:00
+  workflow_dispatch:       # Actions 画面から手動実行も可
+
+# 同時実行を抑制(8:00と22:00が同日内で被らないように直列化)
+concurrency:
+  group: etf-daily-report
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python 3.11
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run daily ETF Custody report (--once)
+        env:
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+          DISCORD_WEBHOOK_DAILY: ${{ secrets.DISCORD_WEBHOOK_DAILY }}
+          DISCORD_WEBHOOK_ALERT: ${{ secrets.DISCORD_WEBHOOK_ALERT }}
+          DRY_RUN: "false"
+          LOG_LEVEL: "INFO"
+          PYTHONIOENCODING: "utf-8"
+        run: uv run python -m src.main --once
+
+      - name: Upload logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ github.run_id }}
+          path: logs/
+          retention-days: 7

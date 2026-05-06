@@ -1,0 +1,16 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+data/*.sqlite
+data/*.sqlite-journal
+logs/*.log
+*.egg-info/
+dist/
+build/
+*.bak
+scripts/addresses_input.txt
+
