@@ -5,7 +5,8 @@ name: ETF Custody Alert (5min)
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # every 5 minutes
+    # 8 時間ごと: UTC 00:00 / 08:00 / 16:00 = JST 09:00 / 17:00 / 01:00
+    - cron: '0 0,8,16 * * *'
   workflow_dispatch:
 
 # Daily run と被ったら直列化(同じ sqlite を触るので)
