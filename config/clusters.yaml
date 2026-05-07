@@ -1,17 +1,12 @@
 btc_clusters:
-- id: coinbase_custody_btc
-  label: Coinbase Custody
+- id: ibit
+  label: IBIT
+  issuer: BlackRock
   chain: bitcoin
-  note: IBIT/ARKB/BITB/GBTCの主要hot/warm wallet群
+  note: BlackRock iShares Bitcoin Trust (Coinbase Custody 預け)
   addresses:
   - 1JEfCWGPsKeJwyAGpyTg6bCzDAwVL7Yd3W
-  - 31jKMDJXnGBfRjXmG3piVcyENEaqoem3FV
-  - 322eWk59mgQReBbgd5GsUb6iJNJhasakn9
-  - 33d2Lx747j9kCPd2jq6MpgjrDmSL1Tp5Ni
-  - 3CYMAQBdkwZyvXDdimMLaNTp56kg7RxPk9
   - 3HAC45Ji2da4dJwH47fhhSoNSYzf7qV4kW
-  - 3J7cUjBZxvGRCwFBz3q23zAsnhFfZrDSSU
-  - 3MqUP6G1daVS5YTD8fz3QgwjZortWwxXFd
   - bc1q0d2kf326r7s3gpasvxj7spvpqhcy5xwrh3p335
   - bc1q6ss378m2raz4n6zlh4r5jxatnnd98lut5kwlc6
   - bc1q7uhewp6qrqyla7vl845r8czn5tnhn092adu9cr
@@ -19,22 +14,17 @@ btc_clusters:
   - bc1q8lu0pl8qmnpzlvy89zs57dkl4pjzxea9ktnrx8
   - bc1q9jrluke2eers8p8avqxnr5nxk97zz3kjmwtgfe
   - bc1qdl65gkmhmtskaqd6zw2gsnwdh9e8qkqcuggllk
-  - bc1qfse9t6kejejy5twvwmcmy5fepafdnrpj5cwwk9
-  - bc1qh9xvgsqh648q7kyq2d0uu90e7tv6ph46rjjy3n
   - bc1qkqtkhmymu6zwpl9lwapj9myn5u4uglfac5es9k
-  - bc1qm3qnm8zsgj7q0pvfxgynjsgdn9u4pgl6fm9tn5
   - bc1qn3wpecedae76l0kfae8e5dgkmqgynw6v4mfcj4
   - bc1qq77vxlcg9xue80myncsdyu4uxhl4pcsscktft3
   - bc1qqajxq2akeqa6nydcjh3eeymt6rt9aunzgauv7k
-  - bc1qu97pnw3arh9gslvt84r3h8rzv2q7ssaevaq5ay
   - bc1quz4t9p6q9unu36dm74fuvvwtt4axcqtxshktlh
-  - bc1qvqx2tlvzcffrcl0vwnev4zrepeygc428dz07aut6pgnup6ck69xszldwk5
-  - bc1qw33ln83tqqjka8y6md0a6znqwn6yfl0j7fzt8c
   - bc1qzddeysjpqc4suj48ts683xngrdcs2zg42q95zy
-- id: fidelity_btc
-  label: Fidelity
+- id: fbtc
+  label: FBTC
+  issuer: Fidelity
   chain: bitcoin
-  note: Fidelity Digital Assets主要wallet群(FBTC関連)
+  note: Fidelity Wise Origin Bitcoin Fund (Fidelity Digital Assets 自己保管)
   addresses:
   - 1G7tmFGxkAu5zPjdqtx8qUtxrZutdE8coT
   - 352zzNHvsBTaUUNzqB5xbMo8EYdpvHJQB2
@@ -77,32 +67,61 @@ btc_clusters:
   - bc1qx9lulg6hp9tq35afmyl6ppce4g02qsekkzm7dh
   - bc1qxfxy7p07gv7rv7nz4nphz32698jjch9qv2cq5v
   - bc1qzalcj25kj4ayha8pq8cc9zawx0a0yy09edtqwx8mp6ku03xz8k3sjpht3t
+- id: bitb
+  label: BITB
+  issuer: Bitwise
+  chain: bitcoin
+  note: Bitwise Bitcoin ETF (Coinbase Custody 預け)
+  addresses:
+  - 3J7cUjBZxvGRCwFBz3q23zAsnhFfZrDSSU
+  - bc1qh9xvgsqh648q7kyq2d0uu90e7tv6ph46rjjy3n
+  - bc1qm3qnm8zsgj7q0pvfxgynjsgdn9u4pgl6fm9tn5
+  - bc1qu97pnw3arh9gslvt84r3h8rzv2q7ssaevaq5ay
+  - bc1qvqx2tlvzcffrcl0vwnev4zrepeygc428dz07aut6pgnup6ck69xszldwk5
+  - bc1qw33ln83tqqjka8y6md0a6znqwn6yfl0j7fzt8c
+- id: gbtc
+  label: GBTC
+  issuer: Grayscale
+  chain: bitcoin
+  note: Grayscale Bitcoin Trust (Coinbase Custody 預け)
+  addresses: []
 eth_clusters:
-- id: coinbase_custody_eth
-  label: Coinbase Custody
+- id: etha
+  label: ETHA
+  issuer: BlackRock
   chain: ethereum
-  note: Coinbase CustodyのETH保有wallet群(ETHA関連)
+  note: BlackRock iShares Ethereum Trust (Coinbase Custody 預け)
   addresses:
   - '0x462E5132a2AAF8778F79f4781EaC83309Ac2EE86'
   - '0x462e5516C4530fEC0C53B5992Ccc1dB96112ee86'
-  - '0x4aD393206569465FfA4F3e0FC34Aa181887A5D3E'
-  - '0xA21e60d3dd18c5ef0DAbAA6D40cF32148a9103d9'
   - '0xDc771b141171450b36fe3BaC7D5FC8575584ef81'
-  - '0xd4D3fde5145141ddF7C465889923f29154526De3'
-- id: fidelity_eth
-  label: Fidelity
+- id: feth
+  label: FETH
+  issuer: Fidelity
   chain: ethereum
-  note: Fidelity ETH保有wallet群(FETH関連)
+  note: Fidelity Ethereum Fund (Fidelity Digital Assets 自己保管)
   addresses:
   - '0x0fb5a8Bf9fACA2C9559009D99d24330fe6e80a75'
   - '0x3915f86819fcf7f04C6684993696d999b8aD0739'
   - '0x5e00B4Ab19483556aDEcB04946bb9588163D1FB7'
   - '0x9cb5CDF15D9C2369564d27c2625899EBFa12E8cD'
   - '0xa7a36Aa63fe4Bf00D91881ba6Bb01F5DfBa034A9'
+- id: ethe
+  label: ETHE
+  issuer: Grayscale
+  chain: ethereum
+  note: Grayscale Ethereum Trust (Coinbase Custody 預け)
+  addresses:
+  - '0x4aD393206569465FfA4F3e0FC34Aa181887A5D3E'
+  - '0xA21e60d3dd18c5ef0DAbAA6D40cF32148a9103d9'
+  - '0xd4D3fde5145141ddF7C465889923f29154526De3'
 display_order:
   btc:
-  - coinbase_custody_btc
-  - fidelity_btc
+  - ibit
+  - fbtc
+  - bitb
+  - gbtc
   eth:
-  - coinbase_custody_eth
-  - fidelity_eth
+  - etha
+  - feth
+  - ethe

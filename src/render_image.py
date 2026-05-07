@@ -251,14 +251,14 @@ def render_daily_report(
     )
     y += 30
 
-    # ============== クラスタ別カード(2カラム) ==============
-    card_h = _calc_card_h(btc, eth, line_h=58, header_h=50, padding_v=24)
+    # ============== 発行体別カード(2カラム) ==============
+    card_h = _calc_card_h(btc, eth, line_h=46, header_h=50, padding_v=24)
     _draw_cluster_card(
-        draw, col_left_x, y, col_w, card_h, "BTC ETF・クラスタ別",
+        draw, col_left_x, y, col_w, card_h, "BTC ETF・発行体別",
         btc, "BTC", card_title_font, cluster_label_font, cluster_num_font,
     )
     _draw_cluster_card(
-        draw, col_right_x, y, col_w, card_h, "ETH ETF・クラスタ別",
+        draw, col_right_x, y, col_w, card_h, "ETH ETF・発行体別",
         eth, "ETH", card_title_font, cluster_label_font, cluster_num_font,
     )
     y += card_h + 30
@@ -360,24 +360,32 @@ def _draw_cluster_card(
     if max_abs == 0:
         max_abs = 1
 
-    bar_left = x + inner_pad + 200
+    # 横並びレイアウト: [ラベル右寄せ] [Net 値左寄せ・色付き] [バー]
+    label_w = 90       # IBIT/FBTC など 4文字想定
+    net_w = 120        # +1,659 など想定
+    gap = 14
+    bar_left = x + inner_pad + label_w + gap + net_w + gap
     bar_right = x + width - inner_pad
     bar_w = bar_right - bar_left
+    bar_h = 22
 
     for c in summary.clusters:
-        # ラベル
-        draw.text((x + inner_pad, line_y), c.label, font=label_font, fill=TEXT_COLOR)
+        # ラベル(右寄せ)
+        lw = _text_w(draw, c.label, label_font)
+        draw.text((x + inner_pad + label_w - lw, line_y + 6), c.label, font=label_font, fill=TEXT_COLOR)
         # 値(緑/赤)
-        net_text = f"{_signed(c.net_flow)} {unit}"
+        net_text = _signed(c.net_flow)
         net_color = _color_for_net(c.net_flow)
-        # ラベルの右、バーの上に値を載せる
-        draw.text((x + inner_pad, line_y + 26), net_text, font=num_font, fill=net_color)
+        nw = _text_w(draw, net_text, num_font)
+        # 右寄せで Net を表示
+        net_x_end = x + inner_pad + label_w + gap + net_w
+        draw.text((net_x_end - nw, line_y), net_text, font=num_font, fill=net_color)
         # バー
         ratio = c.net_flow / max_abs
         _draw_progress_bar(
             draw,
-            bar_left, line_y + 8,
-            bar_w, 30,
+            bar_left, line_y + 9,
+            bar_w, bar_h,
             ratio,
         )
-        line_y += 58
+        line_y += 46

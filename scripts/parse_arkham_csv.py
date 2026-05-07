@@ -45,31 +45,53 @@ if hasattr(sys.stderr, "reconfigure"):
 
 # (regex, mapping or None for explicit exclude)
 # 上から順に評価、最初にマッチしたものを採用
+# Phase 2: 発行体別 (ETF ticker) に振り分け
 RULES: list[tuple[re.Pattern[str], Optional[dict[str, str]]]] = [
-    # 個別 ETF 専用 entity
-    (re.compile(r"Fidelity FBTC", re.I), {"bitcoin": "fidelity_btc"}),
-    (re.compile(r"Fidelity FETH", re.I), {"ethereum": "fidelity_eth"}),
-    (re.compile(r"Fidelity Ethereum ETF", re.I), {"ethereum": "fidelity_eth"}),
-    (re.compile(r"Fidelity Custody", re.I), {"bitcoin": "fidelity_btc", "ethereum": "fidelity_eth"}),
-    (re.compile(r"\bFidelity\b", re.I), {"bitcoin": "fidelity_btc", "ethereum": "fidelity_eth"}),
-    # ETF 発行体(全て Coinbase Custody/Prime にカストディされている前提)
-    (re.compile(r"BlackRock", re.I), {"bitcoin": "coinbase_custody_btc", "ethereum": "coinbase_custody_eth"}),
-    (re.compile(r"Grayscale", re.I), {"bitcoin": "coinbase_custody_btc", "ethereum": "coinbase_custody_eth"}),
-    (re.compile(r"Bitwise", re.I), {"bitcoin": "coinbase_custody_btc", "ethereum": "coinbase_custody_eth"}),
-    # Coinbase Custody/Prime の Deposit Funder 系(ETF 用と確実)
-    (re.compile(r"Coinbase Prime:?\s*(Custody Deposit|Deposit Funder|Custody)", re.I),
-     {"bitcoin": "coinbase_custody_btc", "ethereum": "coinbase_custody_eth"}),
+    # === BTC ETF 発行体別 ===
+    # BlackRock IBIT
+    (re.compile(r"BlackRock.*IBIT", re.I), {"bitcoin": "ibit"}),
+    # Fidelity FBTC
+    (re.compile(r"Fidelity FBTC", re.I), {"bitcoin": "fbtc"}),
+    # Bitwise BITB / Core Bitcoin ETP も BITB に統合(同じ Bitwise BTC ETF カテゴリ)
+    (re.compile(r"Bitwise.*(BITB|Core Bitcoin)", re.I), {"bitcoin": "bitb"}),
+    # Grayscale BTC (Bitcoin Trust / Bitcoin Mini Trust 含む)
+    (re.compile(r"Grayscale.*(Bitcoin|GBTC|BTC)", re.I), {"bitcoin": "gbtc"}),
+
+    # === ETH ETF 発行体別 ===
+    # BlackRock ETHA
+    (re.compile(r"BlackRock.*ETHA", re.I), {"ethereum": "etha"}),
+    # Fidelity FETH / Ethereum ETF
+    (re.compile(r"Fidelity (FETH|Ethereum ETF)", re.I), {"ethereum": "feth"}),
+    # Grayscale ETH (Ethereum Trust / Ethereum Mini Trust)
+    (re.compile(r"Grayscale.*(Ethereum|ETHE|ETH)", re.I), {"ethereum": "ethe"}),
+
+    # === Fidelity 汎用ラベル(ETF specific でない場合) ===
+    # 「Fidelity Custody: Hot Wallet」のような omnibus はチェーン別に按分
+    (re.compile(r"Fidelity Custody", re.I), {"bitcoin": "fbtc", "ethereum": "feth"}),
+    (re.compile(r"\bFidelity\b", re.I), {"bitcoin": "fbtc", "ethereum": "feth"}),
+
+    # === BlackRock / Bitwise / Grayscale の汎用フォールバック ===
+    (re.compile(r"BlackRock", re.I), {"bitcoin": "ibit", "ethereum": "etha"}),
+    (re.compile(r"Bitwise", re.I), {"bitcoin": "bitb"}),  # ETH の Bitwise は現状なし
+    (re.compile(r"Grayscale", re.I), {"bitcoin": "gbtc", "ethereum": "ethe"}),
+
+    # === Coinbase Prime 系すべて除外 ===
+    # ETF カストディアンだが omnibus(複数 ETF の共有 wallet)で、特定の ETF に紐付け不能
+    (re.compile(r"Coinbase Prime", re.I), None),
+    # ARK Invest (ARKB の発行体) — 将来 CSV 提供されたら ARKB に振る
+    # (re.compile(r"ARK Invest|ARK 21Shares|ARKB", re.I), {"bitcoin": "arkb"}),
+
     # === 除外ルール ===
     # 一般取引所 hot wallet
     (re.compile(r"^Coinbase \(", re.I), None),
     (re.compile(r"^Coinbase \d+", re.I), None),
     # omnibus(ETF と一般顧客の両方を抱えるので除外)
     (re.compile(r"Coinbase Prime:?\s*Hot Wallet", re.I), None),
-    (re.compile(r"Coinbase:?\s*Hot Wallet", re.I), None),  # 一般取引所 hot wallet
+    (re.compile(r"Coinbase:?\s*Hot Wallet", re.I), None),
     (re.compile(r"Coinbase:?\s*(Cold|Fees|Deposit\b)", re.I), None),
     # MEV builders(ETH の block builder、ETF と無関係)
     (re.compile(r"BuilderNet|Titan Builder|Quasar Builder|Beaver\s*Build|Flashbots Builder|rsync.builder|MEV Builder", re.I), None),
-    # 既知のexchange/protocol(継承で巻き込まれないように)
+    # 既知のexchange/protocol
     (re.compile(r"Wintermute|Flow Trad", re.I), None),
 ]
 
@@ -179,13 +201,25 @@ def main() -> None:
             merged.setdefault(k, set()).update(v)
         all_warnings.extend([f"[{f.name}] {w}" for w in warnings])
 
-    # 結果出力(ingest_addresses.py 互換形式)
+    # 結果出力(ingest_addresses.py 互換形式) — Phase 2: 発行体別
     cluster_order = [
-        "coinbase_custody_btc",
-        "fidelity_btc",
-        "coinbase_custody_eth",
-        "fidelity_eth",
+        "ibit", "fbtc", "bitb", "gbtc",
+        "etha", "feth", "ethe",
     ]
+    # 同一アドレスが複数 ETF に現れた場合、優先順位最初のクラスタに固定
+    # (例: bc1qfse9t6... が fbtc と bitb の両方で見つかる時は fbtc 優先)
+    seen: set[str] = set()
+    dedupe_log: list[str] = []
+    for cid in cluster_order:
+        addrs = merged.get(cid, set())
+        unique = addrs - seen
+        dropped = addrs - unique
+        if dropped:
+            for a in dropped:
+                dedupe_log.append(f"  {cid}: {a} (already in earlier cluster)")
+        merged[cid] = unique
+        seen.update(unique)
+
     total = 0
     for cid in cluster_order:
         addrs = merged.get(cid, set())
@@ -195,6 +229,13 @@ def main() -> None:
                 print(a)
             print()
             total += len(addrs)
+
+    if dedupe_log:
+        print(f"\n# === dedupe (duplicates removed) ===", file=sys.stderr)
+        for line in dedupe_log[:20]:
+            print(line, file=sys.stderr)
+        if len(dedupe_log) > 20:
+            print(f"  ...({len(dedupe_log) - 20} more)", file=sys.stderr)
 
     # サマリ(stderr)
     print(f"\n# === summary ===", file=sys.stderr)

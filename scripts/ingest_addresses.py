@@ -56,10 +56,14 @@ BTC_RE = re.compile(r"^(bc1[a-z0-9]{6,87}|[13][a-zA-HJ-NP-Z1-9]{25,34})$")
 ETH_RE = re.compile(r"^0x[a-fA-F0-9]{40}$")
 
 VALID_CLUSTERS = {
-    "coinbase_custody_btc": "bitcoin",
-    "fidelity_btc": "bitcoin",
-    "coinbase_custody_eth": "ethereum",
-    "fidelity_eth": "ethereum",
+    # Phase 2: 発行体別 (ETF ticker)
+    "ibit": "bitcoin",   # BlackRock
+    "fbtc": "bitcoin",   # Fidelity
+    "bitb": "bitcoin",   # Bitwise
+    "gbtc": "bitcoin",   # Grayscale
+    "etha": "ethereum",  # BlackRock
+    "feth": "ethereum",  # Fidelity
+    "ethe": "ethereum",  # Grayscale
 }
 
 

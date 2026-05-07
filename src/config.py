@@ -14,9 +14,15 @@ CONFIG_DIR = ROOT / "config"
 
 
 class Cluster(BaseModel):
+    """旧スキーマ互換 + 発行体別 (Phase 2) 拡張。
+
+    Phase 2: id を ETF ticker (ibit, fbtc, bitb, gbtc, etha, feth, ethe) で運用。
+    issuer は表示時に使う発行体名(BlackRock, Fidelity, Bitwise, Grayscale)。
+    """
     id: str
     label: str
     chain: str  # 'bitcoin' or 'ethereum'
+    issuer: str = ""  # Phase 2 で必須化、空なら label をそのまま使う
     note: str = ""
     addresses: list[str] = Field(default_factory=list)
 
