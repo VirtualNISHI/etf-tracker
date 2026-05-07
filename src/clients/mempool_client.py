@@ -57,8 +57,8 @@ class MempoolClient:
             self._last_call = asyncio.get_event_loop().time()
 
     @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(min=1, max=8),
+        stop=stop_after_attempt(2),
+        wait=wait_exponential(min=1, max=4),
         retry=retry_if_exception_type(httpx.HTTPError),
     )
     async def _get(self, path: str) -> Any:
