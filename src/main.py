@@ -11,7 +11,10 @@ import argparse
 import asyncio
 import sys
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from zoneinfo import ZoneInfo
+
+ROOT = Path(__file__).resolve().parent.parent
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -38,6 +41,7 @@ from src.flows import (
 from src.format_embed import build_alert_embed, build_daily_embed
 from src.format_x import build_daily_text
 from src.notable import generate_notable_lines
+from src.render_image import render_daily_report
 from src.send_discord import send_embed
 
 
@@ -95,11 +99,35 @@ async def run_daily() -> None:
     embed = build_daily_embed(btc_summary, eth_summary, notable, thresholds.embed)
     await send_embed(settings.discord_webhook_daily, embed, dry_run=settings.dry_run)
 
-    # X (Twitter) 投稿(全キーが揃っているときだけ)
+    # X (Twitter) 投稿: 画像生成 → 短いキャプションと一緒に投稿
     if settings.x_enabled:
-        x_text = build_daily_text(btc_summary, eth_summary, notable)
+        try:
+            png = render_daily_report(btc_summary, eth_summary, notable)
+        except Exception as e:
+            logger.error(f"image render failed, fallback to text: {e}")
+            png = None
+
+        # キャプション(画像内に詳細あり、ここはタイトル+ハッシュタグだけ)
+        caption_lines = [
+            "📊 ETF Custody Flow Report",
+            (now_jst_str := datetime.now(ZoneInfo("Asia/Tokyo")).strftime("%Y-%m-%d %H:%M JST")),
+            "",
+            f"BTC: {('+' if btc_summary.total_net_flow >= 0 else '')}{btc_summary.total_net_flow:,.0f} BTC",
+            f"ETH: {('+' if eth_summary.total_net_flow >= 0 else '')}{eth_summary.total_net_flow:,.0f} ETH",
+            "",
+            "#BTC #ETH #ETF #SmartMoney",
+        ]
+        caption = "\n".join(caption_lines)
+
         if settings.dry_run:
-            logger.info(f"[DRY_RUN] X tweet ({len(x_text)} chars):\n{x_text}")
+            logger.info(f"[DRY_RUN] X caption ({len(caption)} chars):\n{caption}")
+            if png:
+                from pathlib import Path as _P
+
+                preview_path = ROOT / "data" / "x_post_preview.png"
+                _P(preview_path.parent).mkdir(parents=True, exist_ok=True)
+                preview_path.write_bytes(png)
+                logger.info(f"[DRY_RUN] image saved: {preview_path}")
         else:
             from src.clients.x_client import XClient
 
@@ -109,7 +137,11 @@ async def run_daily() -> None:
                 access_token=settings.x_access_token,
                 access_token_secret=settings.x_access_token_secret,
             )
-            x.post(x_text)
+            if png:
+                x.post_with_image(caption, png)
+            else:
+                # 画像生成失敗時はテキストのみで fallback
+                x.post(build_daily_text(btc_summary, eth_summary, notable))
     else:
         logger.info("X credentials not set, skipping tweet")
 
