@@ -1,0 +1,61 @@
+name: ETF Custody Alert (5min)
+
+# 5分間隔で大口検知(BTC ±1,000 / ETH ±10,000 single tx)を実行。
+# 重複アラートは sqlite で抑止。GitHub Actions の cron は最低 5分単位。
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # every 5 minutes
+  workflow_dispatch:
+
+# Daily run と被ったら直列化(同じ sqlite を触るので)
+concurrency:
+  group: etf-alert
+  cancel-in-progress: false
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python 3.11
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Restore sqlite history cache
+        uses: actions/cache@v4
+        with:
+          path: data/history.sqlite
+          key: etf-history-${{ github.run_id }}
+          restore-keys: |
+            etf-history-
+
+      - name: Run alert check (--alert-once)
+        env:
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+          DISCORD_WEBHOOK_DAILY: ${{ secrets.DISCORD_WEBHOOK_DAILY }}
+          DISCORD_WEBHOOK_ALERT: ${{ secrets.DISCORD_WEBHOOK_ALERT }}
+          # X 投稿はしない(アラートは Discord のみ)
+          DRY_RUN: "false"
+          LOG_LEVEL: "INFO"
+          PYTHONIOENCODING: "utf-8"
+        run: uv run python -m src.main --alert-once
+
+      - name: Upload logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alert-logs-${{ github.run_id }}
+          path: logs/
+          retention-days: 3
