@@ -116,17 +116,25 @@ class MempoolClient:
         self,
         addresses: list[str],
         since_unix: int,
+        concurrency: int = 8,
     ) -> list[BTCTransfer]:
-        """複数アドレスをまとめてクラスタ単位で取得。
+        """複数アドレスをまとめてクラスタ単位で取得(並列実行)。
+
+        concurrency: 同時並行リクエスト数の上限。mempool.space は
+        Cloudflare 経由で大量並列に弱いので 8 程度が無難。
 
         注: クラスタ内アドレス間のtx(自己内移動)は両側で計上されるため、
         flows.py で重複除外する。
         """
-        all_transfers: list[BTCTransfer] = []
-        for addr in addresses:
-            try:
-                transfers = await self.get_transfers_since(addr, since_unix)
-                all_transfers.extend(transfers)
-            except Exception as e:
-                logger.error(f"mempool {addr[:12]}... fetch failed: {e}")
-        return all_transfers
+        sem = asyncio.Semaphore(concurrency)
+
+        async def fetch_one(addr: str) -> list[BTCTransfer]:
+            async with sem:
+                try:
+                    return await self.get_transfers_since(addr, since_unix)
+                except Exception as e:
+                    logger.error(f"mempool {addr[:12]}... fetch failed: {e}")
+                    return []
+
+        results = await asyncio.gather(*[fetch_one(a) for a in addresses])
+        return [t for sublist in results for t in sublist]

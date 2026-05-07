@@ -141,11 +141,15 @@ class EtherscanClient:
         addresses: list[str],
         since_unix: int,
     ) -> list[ETHTransfer]:
-        all_transfers: list[ETHTransfer] = []
-        for addr in addresses:
+        """並列実行。Etherscan は 5 calls/sec 制限あり、これは _request 側の
+        セマフォで担保されているのでここは無制限に gather してOK。"""
+
+        async def fetch_one(addr: str) -> list[ETHTransfer]:
             try:
-                transfers = await self.get_transfers_since(addr, since_unix)
-                all_transfers.extend(transfers)
+                return await self.get_transfers_since(addr, since_unix)
             except Exception as e:
                 logger.error(f"etherscan {addr[:10]}... fetch failed: {e}")
-        return all_transfers
+                return []
+
+        results = await asyncio.gather(*[fetch_one(a) for a in addresses])
+        return [t for sublist in results for t in sublist]

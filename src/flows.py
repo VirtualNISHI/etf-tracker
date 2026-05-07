@@ -100,26 +100,27 @@ async def collect_btc_clusters(
     clusters: list[Cluster],
     period_hours: int,
 ) -> list[ClusterFlow]:
+    """全クラスタを並列に処理。各クラスタ内アドレスも client 側で並列。"""
+    import asyncio
+
     since = int((datetime.now(timezone.utc) - timedelta(hours=period_hours)).timestamp())
-    flows: list[ClusterFlow] = []
-    for cluster in clusters:
+
+    async def one_cluster(cluster: Cluster) -> ClusterFlow:
         if not cluster.addresses:
-            flows.append(ClusterFlow(cluster.id, cluster.label, cluster.chain, 0, 0, 0, 0))
-            continue
+            return ClusterFlow(cluster.id, cluster.label, cluster.chain, 0, 0, 0, 0)
         transfers = await client.get_cluster_transfers(cluster.addresses, since)
         inflow, outflow, tx_count = _aggregate_btc(transfers, set(cluster.addresses))
-        flows.append(
-            ClusterFlow(
-                cluster_id=cluster.id,
-                label=cluster.label,
-                chain=cluster.chain,
-                inflow=inflow,
-                outflow=outflow,
-                net_flow=inflow - outflow,
-                tx_count=tx_count,
-            )
+        return ClusterFlow(
+            cluster_id=cluster.id,
+            label=cluster.label,
+            chain=cluster.chain,
+            inflow=inflow,
+            outflow=outflow,
+            net_flow=inflow - outflow,
+            tx_count=tx_count,
         )
-    return flows
+
+    return list(await asyncio.gather(*[one_cluster(c) for c in clusters]))
 
 
 async def collect_eth_clusters(
@@ -127,26 +128,26 @@ async def collect_eth_clusters(
     clusters: list[Cluster],
     period_hours: int,
 ) -> list[ClusterFlow]:
+    import asyncio
+
     since = int((datetime.now(timezone.utc) - timedelta(hours=period_hours)).timestamp())
-    flows: list[ClusterFlow] = []
-    for cluster in clusters:
+
+    async def one_cluster(cluster: Cluster) -> ClusterFlow:
         if not cluster.addresses:
-            flows.append(ClusterFlow(cluster.id, cluster.label, cluster.chain, 0, 0, 0, 0))
-            continue
+            return ClusterFlow(cluster.id, cluster.label, cluster.chain, 0, 0, 0, 0)
         transfers = await client.get_cluster_transfers(cluster.addresses, since)
         inflow, outflow, tx_count = _aggregate_eth(transfers)
-        flows.append(
-            ClusterFlow(
-                cluster_id=cluster.id,
-                label=cluster.label,
-                chain=cluster.chain,
-                inflow=inflow,
-                outflow=outflow,
-                net_flow=inflow - outflow,
-                tx_count=tx_count,
-            )
+        return ClusterFlow(
+            cluster_id=cluster.id,
+            label=cluster.label,
+            chain=cluster.chain,
+            inflow=inflow,
+            outflow=outflow,
+            net_flow=inflow - outflow,
+            tx_count=tx_count,
         )
-    return flows
+
+    return list(await asyncio.gather(*[one_cluster(c) for c in clusters]))
 
 
 def sort_by_display_order(flows: list[ClusterFlow], order: list[str]) -> list[ClusterFlow]:
