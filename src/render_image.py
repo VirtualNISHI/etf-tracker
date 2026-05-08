@@ -212,9 +212,11 @@ def _draw_chain_section(
     y += 50
 
     # 各 ETF 行(等幅)
-    # レイアウト: [TICKER (~80px)] [signed value (~120px right-aligned)] [unit (~50px)] [(in: X / out: Y)]
+    # レイアウト: [TICKER (~120px)] [signed value (~130px right-aligned)] [unit (~50px)] [(in: X / out: Y)]
+    # ※ "Net Total" ラベル(9文字)が "-105,000" のような大きな値と被らないよう、
+    #    value 右端を ticker 領域からしっかり離す。
     label_x = pad_x + 24
-    value_right_x = pad_x + 24 + 90 + 110  # ticker + signed_value 右端
+    value_right_x = pad_x + 24 + 130 + 130  # ticker 領域 130px + 値 130px = 260px 確保
     unit_x = value_right_x + 14
     inout_x = unit_x + 70
 
