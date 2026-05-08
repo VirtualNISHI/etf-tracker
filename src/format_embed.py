@@ -71,7 +71,7 @@ def build_daily_embed(
 
     return {
         "title": "📊 ETF Custody Flow Report",
-        "description": f"**{now}** · 過去24時間",
+        "description": f"**{now}** · 過去12時間",
         "color": cfg.color_btc,
         "fields": fields,
         "timestamp": datetime.utcnow().isoformat(),

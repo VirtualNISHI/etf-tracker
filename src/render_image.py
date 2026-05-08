@@ -150,7 +150,7 @@ def render_daily_report(
 
     # 日付
     now = (now_jst or datetime.now(JST)).strftime("%Y-%m-%d %H:%M JST")
-    draw.text((pad_x, y), f"{now} · 過去24時間", font=date_font, fill=TEXT_COLOR)
+    draw.text((pad_x, y), f"{now} · 過去12時間", font=date_font, fill=TEXT_COLOR)
     y += 50
 
     # ============== BTC セクション ==============

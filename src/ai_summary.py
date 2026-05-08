@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 
 PROMPT_TEMPLATE = """\
 あなたは仮想通貨 ETF のオンチェーンフロー解説者です。
-以下は BTC/ETH スポット ETF のカストディアドレス群を観測した、過去24時間の発行体別フローです。
+以下は BTC/ETH スポット ETF のカストディアドレス群を観測した、過去12時間の発行体別フローです。
 日本語で **2〜3 行**(各行 35〜55 文字、合計 200 字以内)、市場の特徴を解説してください。
 
 【厳守】
@@ -29,12 +29,12 @@ PROMPT_TEMPLATE = """\
 - 装飾(絵文字・見出し・「以下」「結論」等のメタ語)なし
 - ETF 全体の動向と、特に大きく動いた発行体に言及
 
-【BTC ETF(過去24h・発行体別)】
+【BTC ETF(過去12h・発行体別)】
 {btc_block}
 
 合計: BTC Net Total = {btc_net} BTC ≈ {btc_usd}
 
-【ETH ETF(過去24h・発行体別)】
+【ETH ETF(過去12h・発行体別)】
 {eth_block}
 
 合計: ETH Net Total = {eth_net} ETH ≈ {eth_usd}

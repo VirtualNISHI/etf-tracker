@@ -49,7 +49,7 @@ def build_daily_text(
 
     lines = [
         "📊 ETF Custody Flow Report",
-        f"{now} · 過去24h",
+        f"{now} · 過去12h",
         "",
         f"🟠 BTC: {_signed_native(btc.total_net_flow, 'BTC')} ({_signed_usd(btc.net_flow_usd)})",
         f"🟣 ETH: {_signed_native(eth.total_net_flow, 'ETH')} ({_signed_usd(eth.net_flow_usd)})",

@@ -64,8 +64,9 @@ async def run_daily() -> None:
         EtherscanClient(api.etherscan_base_url, settings.etherscan_api_key) as eth_client,
         CoinGeckoClient(api.coingecko_base_url) as price_client,
     ):
-        btc_flows = await collect_btc_clusters(btc_client, clusters.btc_clusters, 24)
-        eth_flows = await collect_eth_clusters(eth_client, clusters.eth_clusters, 24)
+        # 集計期間: 12時間 (8:00 / 22:00 配信が独立した非オーバーラップなウィンドウ)
+        btc_flows = await collect_btc_clusters(btc_client, clusters.btc_clusters, 12)
+        eth_flows = await collect_eth_clusters(eth_client, clusters.eth_clusters, 12)
         prices = await fetch_prices(price_client)
 
     btc_flows = sort_by_display_order(btc_flows, clusters.display_order["btc"])
