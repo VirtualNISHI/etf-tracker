@@ -15,6 +15,7 @@ dependencies = [
     "tenacity>=8.2.3",
     "tweepy>=4.14",
     "pillow>=10.4",
+    "pilmoji>=2.0",
 ]
 
 [project.optional-dependencies]
