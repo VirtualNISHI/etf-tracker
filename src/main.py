@@ -95,7 +95,15 @@ async def run_daily() -> None:
                 tx_count=c.tx_count,
             )
 
-    notable = generate_notable_lines(btc_summary, eth_summary, thresholds.notable)
+    # まず Gemini で AI 解説を生成、失敗時 (key 無 or API エラー) は notable.py の
+    # 決定論版にフォールバック。
+    from src.ai_summary import generate_ai_summary
+
+    notable = generate_ai_summary(btc_summary, eth_summary, api_key=settings.gemini_api_key)
+    if not notable:
+        logger.info("AI summary unavailable, falling back to deterministic Notable")
+        notable = generate_notable_lines(btc_summary, eth_summary, thresholds.notable)
+
     embed = build_daily_embed(btc_summary, eth_summary, notable, thresholds.embed)
     await send_embed(settings.discord_webhook_daily, embed, dry_run=settings.dry_run)
 

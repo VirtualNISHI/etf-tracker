@@ -63,7 +63,7 @@ def build_daily_embed(
     if notable_lines:
         fields.append(
             {
-                "name": "📌 Notable",
+                "name": "🤖 AI解説",
                 "value": "\n".join(notable_lines),
                 "inline": False,
             }

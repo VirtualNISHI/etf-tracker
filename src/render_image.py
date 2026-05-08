@@ -167,12 +167,12 @@ def render_daily_report(
     )
     y += 16
 
-    # ============== Notable ==============
+    # ============== AI 解説(Gemini)==============
     if notable_lines:
         draw.rectangle(
             [(pad_x - 18, y - 2), (pad_x - 18 + BAR_W, y + 36)], fill=GOLD_COLOR
         )
-        pm.text((pad_x, y), "📌 Notable", font=section_font, fill=GOLD_COLOR)
+        pm.text((pad_x, y), "🤖 AI解説", font=section_font, fill=GOLD_COLOR)
         y += 44
         for line in notable_lines:
             text = line if line.startswith("・") else "・" + line

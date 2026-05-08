@@ -88,6 +88,8 @@ class Settings(BaseModel):
     x_api_key_secret: str = ""
     x_access_token: str = ""
     x_access_token_secret: str = ""
+    # Gemini — 空なら AI 解説スキップ(notable.py の決定論版にフォールバック)
+    gemini_api_key: str = ""
 
     @property
     def x_enabled(self) -> bool:
@@ -126,4 +128,5 @@ def load_settings() -> Settings:
         x_api_key_secret=os.getenv("X_API_KEY_SECRET", ""),
         x_access_token=os.getenv("X_ACCESS_TOKEN", ""),
         x_access_token_secret=os.getenv("X_ACCESS_TOKEN_SECRET", ""),
+        gemini_api_key=os.getenv("GEMINI_API_KEY", ""),
     )
