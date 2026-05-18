@@ -88,8 +88,13 @@ class Settings(BaseModel):
     x_api_key_secret: str = ""
     x_access_token: str = ""
     x_access_token_secret: str = ""
-    # Gemini — 空なら AI 解説スキップ(notable.py の決定論版にフォールバック)
+    # LLM (jp_translator) — Gemini → OpenAI → Grok → DeepL のフォールバックチェーン。
+    # 全部空なら AI 解説スキップ (notable.py の決定論版にフォールバック)。
+    # 最低 1 つあれば動く (失敗時のみ次のプロバイダへ)。
     gemini_api_key: str = ""
+    openai_api_key: str = ""
+    xai_api_key: str = ""
+    deepl_api_key: str = ""
 
     @property
     def x_enabled(self) -> bool:
@@ -129,4 +134,7 @@ def load_settings() -> Settings:
         x_access_token=os.getenv("X_ACCESS_TOKEN", ""),
         x_access_token_secret=os.getenv("X_ACCESS_TOKEN_SECRET", ""),
         gemini_api_key=os.getenv("GEMINI_API_KEY", ""),
+        openai_api_key=os.getenv("OPENAI_API_KEY", ""),
+        xai_api_key=os.getenv("XAI_API_KEY", "") or os.getenv("GROK_API_KEY", ""),
+        deepl_api_key=os.getenv("DEEPL_API_KEY", ""),
     )
