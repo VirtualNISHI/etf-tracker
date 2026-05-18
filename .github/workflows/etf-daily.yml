@@ -62,8 +62,12 @@ jobs:
           X_API_KEY_SECRET: ${{ secrets.X_API_KEY_SECRET }}
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
-          # Gemini — AI 解説生成 (空ならフォールバック)
+          # LLM (jp_translator) — AI 解説生成。Gemini → OpenAI → Grok → DeepL の
+          # フォールバックチェーン。全部空なら notable.py の決定論版にフォールバック。
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
           DRY_RUN: "false"
           LOG_LEVEL: "INFO"
           PYTHONIOENCODING: "utf-8"
