@@ -9,6 +9,11 @@ on:
     - cron: '0 23 * * *'  # UTC 23:00 = JST 翌日 08:00
     - cron: '0 13 * * *'  # UTC 13:00 = JST 当日 22:00
   workflow_dispatch:       # Actions 画面から手動実行も可
+    inputs:
+      dry_run:
+        description: "Generate everything but skip Discord/X posting (logs only)"
+        type: boolean
+        default: false
 
 # 同時実行を抑制(8:00と22:00が同日内で被らないように直列化)
 concurrency:
@@ -68,7 +73,8 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
-          DRY_RUN: "false"
+          # Scheduled runs always post. Manual runs honour the dry_run input.
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && 'true' || 'false' }}
           LOG_LEVEL: "INFO"
           PYTHONIOENCODING: "utf-8"
         run: uv run python -m src.main --once
