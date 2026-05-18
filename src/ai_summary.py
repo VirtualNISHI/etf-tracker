@@ -10,12 +10,10 @@
 """
 from __future__ import annotations
 
-import logging
+from loguru import logger as log
 
 from src.flows import ChainSummary
 from src.jp_translator import generate
-
-log = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """\
 あなたは仮想通貨 ETF のオンチェーンフロー解説者です。
@@ -129,5 +127,5 @@ def generate_ai_summary(
         if not ln.startswith("・"):
             ln = "・" + ln
         lines.append(ln)
-    log.info("ai summary: %d lines, %d chars", len(lines), len(text))
+    log.info("ai summary: {} lines, {} chars", len(lines), len(text))
     return lines[:3]  # 最大3行
