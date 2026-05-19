@@ -14,6 +14,10 @@ on:
         description: "Generate everything but skip Discord/X posting (logs only)"
         type: boolean
         default: false
+      disable_gemini:
+        description: "Force-skip Gemini (empty GEMINI_API_KEY) so the jp_translator chain falls through to OpenAI/Grok. For fallback testing only."
+        type: boolean
+        default: false
 
 # 同時実行を抑制(8:00と22:00が同日内で被らないように直列化)
 concurrency:
@@ -69,7 +73,9 @@ jobs:
           X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
           # LLM (jp_translator) — AI 解説生成。Gemini → OpenAI → Grok → DeepL の
           # フォールバックチェーン。全部空なら notable.py の決定論版にフォールバック。
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # If disable_gemini=true on manual dispatch, blank out Gemini key so
+          # jp_translator skips it and falls through to OpenAI/Grok.
+          GEMINI_API_KEY: ${{ (github.event_name == 'workflow_dispatch' && inputs.disable_gemini) && '' || secrets.GEMINI_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
