@@ -73,17 +73,25 @@ jobs:
           X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
           # LLM (jp_translator) — AI 解説生成。Gemini → OpenAI → Grok → DeepL の
           # フォールバックチェーン。全部空なら notable.py の決定論版にフォールバック。
-          # If disable_gemini=true on manual dispatch, blank out Gemini key so
-          # jp_translator skips it and falls through to OpenAI/Grok.
-          GEMINI_API_KEY: ${{ (github.event_name == 'workflow_dispatch' && inputs.disable_gemini) && '' || secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_SECRET: ${{ secrets.GEMINI_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+          DISABLE_GEMINI: ${{ github.event_name == 'workflow_dispatch' && inputs.disable_gemini && 'true' || 'false' }}
           # Scheduled runs always post. Manual runs honour the dry_run input.
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && 'true' || 'false' }}
           LOG_LEVEL: "INFO"
           PYTHONIOENCODING: "utf-8"
-        run: uv run python -m src.main --once
+        run: |
+          # Workflow-expression "&& '' ||" returns the secret when '' is falsy,
+          # so we resolve GEMINI_API_KEY here in shell instead.
+          if [ "$DISABLE_GEMINI" = "true" ]; then
+            export GEMINI_API_KEY=""
+            echo "::notice::disable_gemini=true → GEMINI_API_KEY blanked for this run"
+          else
+            export GEMINI_API_KEY="$GEMINI_API_KEY_SECRET"
+          fi
+          uv run python -m src.main --once
 
       - name: Upload logs (on failure)
         if: failure()
