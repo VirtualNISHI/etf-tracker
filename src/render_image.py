@@ -19,7 +19,7 @@
     │  📌 Notable                                          │
     │  ・xxx                                                │
     │                                                       │
-    │  Powered by mempool.space + Etherscan · by 仮想NISHI · @Nishi8maru
+    │  Powered by mempool.space + Etherscan
     └─────────────────────────────────────────────────────┘
 
 絵文字は色付き円・五芒星・小さな矩形チャート(画像処理で描画)で代替。
@@ -90,8 +90,8 @@ MONO_BOLD_CANDIDATES = [
     "/usr/share/fonts/truetype/liberation/LiberationMono-Bold.ttf",
 ]
 
-FOOTER_TEXT_LEFT = "Powered by mempool.space + Etherscan · by 仮想NISHI"
-FOOTER_TEXT_RIGHT = "@Nishi8maru"
+FOOTER_TEXT_LEFT = "Powered by mempool.space + Etherscan"
+FOOTER_TEXT_RIGHT = ""
 
 
 def _find_font(candidates: list[str]) -> str:
@@ -280,8 +280,9 @@ def render_daily_report(
     y_footer = y + 20
     draw.line([(pad_x, y), (WIDTH - pad_x, y)], fill=DIVIDER_COLOR, width=1)
     draw.text((pad_x, y_footer), FOOTER_TEXT_LEFT, font=footer_font, fill=MUTED_COLOR)
-    right_w = _text_w(draw, FOOTER_TEXT_RIGHT, footer_font)
-    draw.text((WIDTH - pad_x - right_w, y_footer), FOOTER_TEXT_RIGHT, font=footer_font, fill=MUTED_COLOR)
+    if FOOTER_TEXT_RIGHT:
+        right_w = _text_w(draw, FOOTER_TEXT_RIGHT, footer_font)
+        draw.text((WIDTH - pad_x - right_w, y_footer), FOOTER_TEXT_RIGHT, font=footer_font, fill=MUTED_COLOR)
     y = y_footer + 50
 
     # ============== トリミング ==============
@@ -389,3 +390,125 @@ def _draw_cluster_card(
             ratio,
         )
         line_y += 46
+
+
+# ============== リアルタイム大口アラート用カード ==============
+
+ALERT_W = 1200
+ALERT_H = 675  # 16:9 — X large-image preview 比率
+
+
+def render_alert_card(
+    *,
+    issuer: str,
+    ticker: str,
+    chain: str,            # "bitcoin" | "ethereum"
+    amount: float,         # 符号付きネイティブ量 (＋=流入 / −=流出)
+    unit: str,             # "BTC" | "ETH"
+    price_usd: float,
+    direction: str,        # "inflow" | "outflow"
+    tx_hash: str,
+    block_time: datetime,
+    now_jst: datetime | None = None,
+    flow_label: str = "",  # "取引所 Coinbase  →  BlackRock IBIT" 等。空なら発行体行にフォールバック。
+) -> bytes:
+    """単発の機関カストディ大口送金を 1 枚カードに描画して PNG bytes を返す。
+
+    daily カードと同じパレット/フォント資産を流用。絵文字は使わず色付き図形で代替
+    (Linux ランナーでも確実にレンダリングされる)。
+    """
+    is_inflow = amount >= 0
+    accent = GREEN_COLOR if is_inflow else RED_COLOR
+    chain_accent = ORANGE_COLOR if chain == "bitcoin" else PURPLE_COLOR
+    dir_label = "INFLOW" if is_inflow else "OUTFLOW"
+    dir_label_jp = "流入(預入)" if is_inflow else "流出(引出)"
+    usd_value = amount * price_usd
+
+    title_font = ImageFont.truetype(_find_font(JP_BOLD_CANDIDATES), 56)
+    issuer_font = ImageFont.truetype(_find_font(JP_BOLD_CANDIDATES), 46)
+    label_font = ImageFont.truetype(_find_font(JP_REGULAR_CANDIDATES), 26)
+    big_num_font = ImageFont.truetype(_find_font(MONO_BOLD_CANDIDATES), 78)
+    usd_font = ImageFont.truetype(_find_font(JP_BOLD_CANDIDATES), 34)
+    badge_font = ImageFont.truetype(_find_font(JP_BOLD_CANDIDATES), 30)
+    pill_font = ImageFont.truetype(_find_font(JP_REGULAR_CANDIDATES), 22)
+    mono_font = ImageFont.truetype(_find_font(MONO_CANDIDATES), 24)
+    footer_font = ImageFont.truetype(_find_font(JP_REGULAR_CANDIDATES), 20)
+
+    img = Image.new("RGB", (ALERT_W, ALERT_H), color=BG_COLOR)
+    draw = ImageDraw.Draw(img)
+
+    pad_x = 60
+
+    # ---- ヘッダ: 太いアクセントバー + 大きめタイトル(方向色で目立たせる)
+    _draw_rounded_rect(draw, (pad_x, 36, pad_x + 10, 96), 5, accent)
+    draw.text((pad_x + 28, 32), "大型送金速報", font=title_font, fill=CYAN_COLOR)
+
+    # ---- チェーン pill (右上)
+    chain_text = chain.upper()
+    pill_pad = 18
+    pill_tw = _text_w(draw, chain_text, pill_font)
+    pill_w = pill_tw + pill_pad * 2
+    pill_h = 40
+    pill_x = ALERT_W - pad_x - pill_w
+    pill_y = 44
+    _draw_rounded_rect(draw, (pill_x, pill_y, pill_x + pill_w, pill_y + pill_h), 20, CARD_COLOR)
+    draw.text((pill_x + pill_pad, pill_y + 7), chain_text, font=pill_font, fill=chain_accent)
+
+    # ---- 区切り
+    draw.line([(pad_x, 108), (ALERT_W - pad_x, 108)], fill=DIVIDER_COLOR, width=1)
+
+    # ---- 発行体行 or 送金経路(誰から誰へ)。flow_label があれば経路を見出しにする(冗長回避)。
+    max_w = ALERT_W - pad_x * 2
+    if flow_label:
+        draw.text((pad_x, 120), "送金経路", font=ImageFont.truetype(_find_font(JP_REGULAR_CANDIDATES), 20), fill=MUTED_COLOR)
+        # 幅に収まるようフォントサイズを段階的に縮小
+        headline_font = ImageFont.truetype(_find_font(JP_BOLD_CANDIDATES), 40)
+        for size in (40, 36, 32, 28, 24):
+            headline_font = ImageFont.truetype(_find_font(JP_BOLD_CANDIDATES), size)
+            if _text_w(draw, flow_label, headline_font) <= max_w:
+                break
+        draw.text((pad_x, 150), flow_label, font=headline_font, fill=TEXT_COLOR)
+    else:
+        draw.text((pad_x, 138), f"{issuer} {ticker}".strip(), font=issuer_font, fill=TEXT_COLOR)
+
+    # ---- 大型 金額ブロック (左) + 方向バッジ (右)
+    draw.text((pad_x, 232), "送金量(主要wallet基準・推定)", font=label_font, fill=SUBTEXT_COLOR)
+    big_text = f"{_signed(amount)} {unit}"
+    draw.text((pad_x, 266), big_text, font=big_num_font, fill=accent)
+    draw.text((pad_x, 372), f"≈ {_signed_usd(usd_value)}", font=usd_font, fill=accent)
+
+    # 方向バッジ
+    badge_tw = _text_w(draw, dir_label, badge_font)
+    badge_pad = 26
+    badge_w = badge_tw + badge_pad * 2
+    badge_h = 60
+    badge_x = ALERT_W - pad_x - badge_w
+    badge_y = 250
+    _draw_rounded_rect(draw, (badge_x, badge_y, badge_x + badge_w, badge_y + badge_h), 14, accent)
+    draw.text((badge_x + badge_pad, badge_y + 13), dir_label, font=badge_font, fill=BG_COLOR)
+    jp_tw = _text_w(draw, dir_label_jp, label_font)
+    draw.text((badge_x + badge_w - jp_tw, badge_y + badge_h + 12), dir_label_jp, font=label_font, fill=accent)
+
+    # ---- 区切り
+    draw.line([(pad_x, 452), (ALERT_W - pad_x, 452)], fill=DIVIDER_COLOR, width=1)
+
+    # ---- Tx / 時刻
+    short_tx = f"{tx_hash[:10]}…{tx_hash[-8:]}" if len(tx_hash) > 22 else tx_hash
+    draw.text((pad_x, 480), "Tx", font=label_font, fill=MUTED_COLOR)
+    draw.text((pad_x + 60, 482), short_tx, font=mono_font, fill=SUBTEXT_COLOR)
+
+    ts_jst = block_time.astimezone(JST).strftime("%Y-%m-%d %H:%M JST")
+    draw.text((pad_x, 524), "検知時刻", font=label_font, fill=MUTED_COLOR)
+    draw.text((pad_x + 120, 526), ts_jst, font=mono_font, fill=SUBTEXT_COLOR)
+
+    # ---- フッター
+    draw.line([(pad_x, ALERT_H - 64), (ALERT_W - pad_x, ALERT_H - 64)], fill=DIVIDER_COLOR, width=1)
+    foot_left = "Powered by mempool.space + Etherscan · 推定値"
+    draw.text((pad_x, ALERT_H - 44), foot_left, font=footer_font, fill=MUTED_COLOR)
+    if FOOTER_TEXT_RIGHT:
+        right_w = _text_w(draw, FOOTER_TEXT_RIGHT, footer_font)
+        draw.text((ALERT_W - pad_x - right_w, ALERT_H - 44), FOOTER_TEXT_RIGHT, font=footer_font, fill=MUTED_COLOR)
+
+    buf = BytesIO()
+    img.save(buf, format="PNG", optimize=True)
+    return buf.getvalue()

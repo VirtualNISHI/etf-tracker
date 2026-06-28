@@ -31,6 +31,8 @@ class ETHTransfer:
     amount_eth: float  # 正=流入, 負=流出
     block_time: datetime
     confirmed: bool = True
+    from_addr: str = ""  # lowercased。カウンターパーティ解決用
+    to_addr: str = ""  # lowercased
 
 
 class EtherscanClient:
@@ -132,6 +134,8 @@ class EtherscanClient:
                     address=address,
                     amount_eth=amount,
                     block_time=datetime.fromtimestamp(ts, tz=timezone.utc),
+                    from_addr=from_addr,
+                    to_addr=to_addr,
                 )
             )
         return transfers

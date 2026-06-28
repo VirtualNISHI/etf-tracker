@@ -16,6 +16,17 @@ alert_thresholds:
     inflow: 10000
     outflow: -10000
 
+# カウンターパーティ解決(誰から誰へ: 取引所/ETF/不明/内部移動)
+counterparty:
+  enabled: true
+  # 同一custody内の振替(例: Coinbaseが管理するIBIT⇔BITB等)の扱い。
+  #   true  = 完全に抑制(Discord/X とも出さない。DEBUGログには残す)
+  #   false = Discordのみ muted 通知(Xには絶対出さない)
+  suppress_internal: true
+  dominance_ratio: 0.6      # 相手を1社に名寄せするのに必要な価値シェア(未満なら不明)
+  batch_fanout_max: 5       # 外部受取先がこれ超なら名寄せせず「複数アドレスへ分散」
+  label_max_age_days: 180   # labels.yaml as_of がこれより古いと公開Xでは不明扱い
+
 # Notable自動生成
 notable:
   lookback_days: 30

@@ -30,6 +30,7 @@ class BTCTransfer:
     amount_btc: float  # 正=受信(流入), 負=送信(流出)
     block_time: datetime
     confirmed: bool
+    raw_tx: dict | None = None  # alert経路でのみ充填。full vin[]/vout[](カウンターパーティ解決用)
 
 
 class MempoolClient:
@@ -72,6 +73,14 @@ class MempoolClient:
     async def get_address_txs(self, address: str) -> list[dict[str, Any]]:
         """確認済みtxの直近(mempool.spaceは最大50件返す)。"""
         return list(await self._get(f"/address/{address}/txs"))
+
+    async def get_tx(self, txid: str) -> dict[str, Any]:
+        """単一txの完全な vin[]/vout[] を取得(カウンターパーティ解決の正本)。
+
+        address/txs は最大50件で window が切れることがあり per-address net が不完全になり得るため、
+        alert判定はこの正本txから cluster-net を再計算する。
+        """
+        return dict(await self._get(f"/tx/{txid}"))
 
     async def get_transfers_since(
         self,

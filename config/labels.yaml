@@ -1,0 +1,64 @@
+# config/labels.yaml — OUR editorial counterparty labels ONLY.
+#
+# ToS-clean by construction:
+#   - The runtime resolver reads ONLY this file + clusters.yaml. ZERO network calls.
+#   - You (operator) build this OFFLINE. You MAY consult Nansen/Arkham offline to find
+#     addresses, but this is YOUR curated, editorial list — never an auto-redistributed feed.
+#   - Missing file is fine: every counterparty then degrades to 不明ウォレット (no crash).
+#
+# Matching rules:
+#   - chain-scoped: a bitcoin address never matches an ethereum entry and vice-versa.
+#   - ETH addresses are lowercased on load; BTC addresses are case-sensitive (kept verbatim).
+#   - clusters.yaml (our ETF custody) is checked FIRST, so an address that is one of our ETF
+#     wallets is labeled as that ETF even if also listed here.
+#   - `as_of` older than thresholds.yaml counterparty.label_max_age_days (default 180d) =>
+#     the label is treated as 不明 on PUBLIC X (still shown, marked 推定, on private Discord).
+#
+# Keep entries SPARSE and HIGH-CONFIDENCE. A wrong label posted publicly on X is worse than 不明.
+# Use scripts/build_labels.py to append entries from an Arkham/Nansen TSV export.
+
+version: 1
+
+exchanges:
+  # ---- VERIFIED from this repo's own offline Arkham exports (scripts/blackrock_arkham.tsv,
+  #      bitwise_arkham.tsv): these Coinbase Prime hot-wallet addresses actually appear as the
+  #      counterparty funding IBIT / BITB creations. Coinbase is IBIT/BITB/GBTC's custodian, so
+  #      "Coinbase → IBIT" is the creation/settlement leg. ToS-clean (your own export). ----
+  - name: Coinbase
+    type: exchange
+    chain: bitcoin
+    as_of: "2026-06-28"
+    addresses:
+      - 3MqUP6G1daVS5YTD8fz3QgwjZortWwxXFd   # Coinbase Prime: Hot Wallet
+      - 31jKMDJXnGBfRjXmG3piVcyENEaqoem3FV   # Coinbase Prime: Hot Wallet (group)
+      - 3GPnJfBN4A3zhaHAewQAfcnshf6kNKe2tw   # Coinbase Prime: Hot Wallet (group)
+
+  # ---- TEMPLATES — fill from your OWN offline research, then uncomment. Left commented so the
+  #      bot never posts an unverified label. The well-known addresses below are widely published
+  #      but YOU must confirm before enabling (hot wallets rotate). ----
+  # - name: Coinbase
+  #   type: exchange
+  #   chain: ethereum
+  #   as_of: 2026-06-28
+  #   addresses:
+  #     - '0x71660c4005ba85c37ccec55d0c4493e66fe775d3'   # Coinbase 1 (VERIFY)
+  #     - '0x503828976d22510aad0201ac7ec88293211d23da'   # Coinbase 2 (VERIFY)
+  # - name: Binance
+  #   type: exchange
+  #   chain: ethereum
+  #   as_of: 2026-06-28
+  #   addresses:
+  #     - '0x28c6c06298d514db089934071355e5743bf21d60'   # Binance 14 (VERIFY)
+  #     - '0x21a31ee1afc51d94c2efccaa2092ad1028285549'   # Binance 15 (VERIFY)
+  # - name: Kraken
+  #   type: exchange
+  #   chain: ethereum
+  #   as_of: 2026-06-28
+  #   addresses:
+  #     - '0x2910543af39aba0cd09dbb2d50200b3e800a63d2'   # Kraken 1 (VERIFY)
+  # - name: Binance
+  #   type: exchange
+  #   chain: bitcoin
+  #   as_of: 2026-06-28
+  #   addresses:
+  #     - bc1q...   # Binance BTC hot wallet (VERIFY)

@@ -85,6 +85,11 @@ def build_alert_embed(
     direction: str,  # 'inflow' or 'outflow'
     tx_hash: str,
     cfg: EmbedConfig,
+    *,
+    from_display: str = "",
+    to_display: str = "",
+    low_confidence: bool = False,
+    signal_hint: str = "",
 ) -> dict[str, Any]:
     unit = "BTC" if chain == "bitcoin" else "ETH"
     arrow = "🟢 流入" if direction == "inflow" else "🔴 流出"
@@ -93,14 +98,23 @@ def build_alert_embed(
         if chain == "bitcoin"
         else f"https://etherscan.io/tx/{tx_hash}"
     )
+    fields: list[dict[str, Any]] = [
+        {"name": "Cluster", "value": cluster_label, "inline": True},
+        {"name": "Chain", "value": chain, "inline": True},
+    ]
+    # 送金経路(誰から誰へ)。Discordは私的チャンネルなので推定も表示可。
+    if from_display or to_display:
+        suffix = " ※推定" if low_confidence else ""
+        route = f"{from_display} → {to_display}{suffix}"
+        fields.append({"name": "送金経路", "value": route, "inline": False})
+        if signal_hint:
+            fields.append({"name": "想定", "value": signal_hint, "inline": False})
+    fields.append({"name": "Tx", "value": f"[Explorer]({explorer_url})", "inline": False})
+
     return {
         "title": f"⚡ 大口検知: {cluster_label}",
         "description": f"{arrow} **{abs(amount):,.0f} {unit}**",
         "color": cfg.color_alert,
-        "fields": [
-            {"name": "Cluster", "value": cluster_label, "inline": True},
-            {"name": "Chain", "value": chain, "inline": True},
-            {"name": "Tx", "value": f"[Explorer]({explorer_url})", "inline": False},
-        ],
+        "fields": fields,
         "timestamp": datetime.utcnow().isoformat(),
     }

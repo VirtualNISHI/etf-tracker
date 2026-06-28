@@ -76,3 +76,42 @@ def build_daily_text(
         text = text[: MAX_LEN - 3] + "..."
 
     return text
+
+
+def build_alert_text(
+    *,
+    issuer: str,
+    ticker: str,
+    amount: float,        # 符号付きネイティブ量 (＋=流入 / −=流出)
+    unit: str,            # "BTC" | "ETH"
+    price_usd: float,
+    block_time: datetime,
+    flow_line: str = "",  # "取引所 Coinbase → BlackRock IBIT" 等。空なら発行体行にフォールバック。
+) -> str:
+    """単発大口アラート用の ≤280 字キャプション。
+
+    画像カードに詳細があるので、ここはタイトル・要点・ハッシュタグのみ。
+    """
+    is_inflow = amount >= 0
+    dir_jp = "流入(預入)" if is_inflow else "流出(引出)"
+    usd_value = amount * price_usd
+    ts = block_time.astimezone(JST).strftime("%Y-%m-%d %H:%M JST")
+
+    # 発行体名をハッシュタグ化 (英数のみ、スペース除去)
+    issuer_tag = "#" + "".join(ch for ch in issuer if ch.isalnum()) if issuer else ""
+    tags = " ".join(t for t in [f"#{unit}", "#ETF", issuer_tag, "#SmartMoney"] if t)
+
+    headline = flow_line if flow_line else f"{issuer} {ticker}".strip()
+    lines = [
+        "🐋 機関カストディ 大口検知",
+        headline,
+        "",
+        f"{_signed_native(amount, unit)} ({_signed_usd(usd_value)}) {dir_jp}",
+        ts,
+        "",
+        tags,
+    ]
+    text = "\n".join(lines)
+    if len(text) > MAX_LEN:
+        text = text[: MAX_LEN - 3] + "..."
+    return text

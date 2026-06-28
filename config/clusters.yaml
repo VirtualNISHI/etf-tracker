@@ -2,6 +2,7 @@ btc_clusters:
 - id: ibit
   label: IBIT
   issuer: BlackRock
+  custodian: coinbase
   chain: bitcoin
   note: BlackRock iShares Bitcoin Trust (Coinbase Custody 預け)
   addresses:
@@ -23,6 +24,7 @@ btc_clusters:
 - id: fbtc
   label: FBTC
   issuer: Fidelity
+  custodian: fidelity
   chain: bitcoin
   note: Fidelity Wise Origin Bitcoin Fund (Fidelity Digital Assets 自己保管)
   addresses:
@@ -70,6 +72,7 @@ btc_clusters:
 - id: bitb
   label: BITB
   issuer: Bitwise
+  custodian: coinbase
   chain: bitcoin
   note: Bitwise Bitcoin ETF (Coinbase Custody 預け)
   addresses:
@@ -82,6 +85,7 @@ btc_clusters:
 - id: gbtc
   label: GBTC
   issuer: Grayscale
+  custodian: coinbase
   chain: bitcoin
   note: Grayscale Bitcoin Trust (Coinbase Custody 預け)
   addresses: []
@@ -89,6 +93,7 @@ eth_clusters:
 - id: etha
   label: ETHA
   issuer: BlackRock
+  custodian: coinbase
   chain: ethereum
   note: BlackRock iShares Ethereum Trust (Coinbase Custody 預け)
   addresses:
@@ -98,6 +103,7 @@ eth_clusters:
 - id: feth
   label: FETH
   issuer: Fidelity
+  custodian: fidelity
   chain: ethereum
   note: Fidelity Ethereum Fund (Fidelity Digital Assets 自己保管)
   addresses:
@@ -109,6 +115,7 @@ eth_clusters:
 - id: ethe
   label: ETHE
   issuer: Grayscale
+  custodian: coinbase
   chain: ethereum
   note: Grayscale Ethereum Trust (Coinbase Custody 預け)
   addresses:
