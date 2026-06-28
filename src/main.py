@@ -111,7 +111,8 @@ async def run_daily() -> None:
     await send_embed(settings.discord_webhook_daily, embed, dry_run=settings.dry_run)
 
     # X (Twitter) 投稿: 画像生成 → 短いキャプションと一緒に投稿
-    if settings.x_enabled:
+    # daily は alert と独立した x_daily_enabled ゲートで制御(既定 False = Xに出さない)。
+    if settings.x_enabled and settings.x_daily_enabled:
         try:
             png = render_daily_report(btc_summary, eth_summary, notable)
         except Exception as e:
@@ -154,7 +155,11 @@ async def run_daily() -> None:
                 # 画像生成失敗時はテキストのみで fallback
                 x.post(build_daily_text(btc_summary, eth_summary, notable))
     else:
-        logger.info("X credentials not set, skipping tweet")
+        logger.info(
+            "daily X post skipped (x_enabled=%s, x_daily_enabled=%s)",
+            settings.x_enabled,
+            settings.x_daily_enabled,
+        )
 
     logger.info("=== Daily report done ===")
 

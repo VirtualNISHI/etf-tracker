@@ -127,6 +127,9 @@ class Settings(BaseModel):
     # 既定 False = 認証情報があっても alert は preview PNG 生成のみ(実投稿しない)。
     # 明示的に X_ALERT_ENABLED=true にした時だけ実投稿する(安全弁)。
     x_alert_enabled: bool = False
+    # 定時(daily)レポートの X 投稿ゲート。既定 False = 認証情報があっても daily は
+    # X に出さない(Discord のみ)。alert の X 投稿と独立して制御するための安全弁。
+    x_daily_enabled: bool = False
     # LLM (jp_translator) — Gemini → OpenAI → Grok → DeepL のフォールバックチェーン。
     # 全部空なら AI 解説スキップ (notable.py の決定論版にフォールバック)。
     # 最低 1 つあれば動く (失敗時のみ次のプロバイダへ)。
@@ -181,6 +184,7 @@ def load_settings() -> Settings:
         x_access_token=os.getenv("X_ACCESS_TOKEN", ""),
         x_access_token_secret=os.getenv("X_ACCESS_TOKEN_SECRET", ""),
         x_alert_enabled=os.getenv("X_ALERT_ENABLED", "false").lower() == "true",
+        x_daily_enabled=os.getenv("X_DAILY_ENABLED", "false").lower() == "true",
         gemini_api_key=os.getenv("GEMINI_API_KEY", ""),
         openai_api_key=os.getenv("OPENAI_API_KEY", ""),
         xai_api_key=os.getenv("XAI_API_KEY", "") or os.getenv("GROK_API_KEY", ""),
