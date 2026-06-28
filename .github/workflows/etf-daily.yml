@@ -5,10 +5,10 @@ name: ETF Custody Daily Report
 # 厳密な時刻配信が必要なら別の cron 基盤(VPS等)を検討。
 
 on:
-  schedule:
-    # 1日1回、JST 22:00 配信のみ(NY 09:00 ET 前後の ETF フローが反映済)。
-    # 朝の cron は冗長だったので削除。
-    - cron: '0 13 * * *'  # UTC 13:00 = JST 当日 22:00
+  # DISABLED 2026-06-28: VPS の systemd 常駐 bot が daily レポートを Discord へ
+  # 配信するようになったため、この schedule は廃止(重複投稿の回避)。なお本 workflow
+  # は secrets 経由で X へも自動投稿していたが、X は意図的に封印するため停止する。
+  # 手動実行は workflow_dispatch から可能。
   workflow_dispatch:       # Actions 画面から手動実行も可
     inputs:
       dry_run:

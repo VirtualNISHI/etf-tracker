@@ -4,9 +4,9 @@ name: ETF Custody Alert (5min)
 # 重複アラートは sqlite で抑止。GitHub Actions の cron は最低 5分単位。
 
 on:
-  schedule:
-    # 8 時間ごと: UTC 00:00 / 08:00 / 16:00 = JST 09:00 / 17:00 / 01:00
-    - cron: '0 0,8,16 * * *'
+  # DISABLED 2026-06-28: VPS の systemd 常駐 bot (nishi-etf-tracker) が 5分毎の
+  # alert を担うようになったため、この schedule は廃止(Discord 重複投稿の回避)。
+  # 手動実行は workflow_dispatch から可能。
   workflow_dispatch:
 
 # Daily run と被ったら直列化(同じ sqlite を触るので)
