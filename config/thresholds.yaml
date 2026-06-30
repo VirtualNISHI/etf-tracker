@@ -43,6 +43,8 @@ embed:
 # データソース固有
 api:
   etherscan_base_url: "https://api.etherscan.io/v2/api"  # V2 (chainid付与必須、2025年中にV1廃止)
-  mempool_base_url: "https://mempool.space/api"
+  # BTCソース。mempool.space は共有VPSのIPをCloudflareでブロック(接続タイムアウト)するため、
+  # API互換(Esplora)の blockstream.info に切替(2026-06-30)。/address/{a}/txs・/tx/{id} は同形式。
+  mempool_base_url: "https://blockstream.info/api"
   coingecko_base_url: "https://api.coingecko.com/api/v3"
   request_min_interval_ms: 100  # 連続呼び出し時の最低間隔
